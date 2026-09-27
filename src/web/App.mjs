@@ -10,7 +10,6 @@ import Manager from "./Manager.mjs";
 import HTMLCategory from "./HTMLCategory.mjs";
 import HTMLOperation from "./HTMLOperation.mjs";
 import Split from "split.js";
-import cptable from "codepage";
 
 
 /**
@@ -550,15 +549,15 @@ class App {
         // Read in input data from URI params
         if (this.uriParams.input) {
             try {
-                let inputVal;
                 const inputChrEnc = this.manager.input.getChrEnc();
                 const inputData = fromBase64(this.uriParams.input, null, "byteArray");
                 if (inputChrEnc > 0) {
-                    inputVal = cptable.utils.decode(inputChrEnc, inputData);
+                    import("codepage").then(({default: cptable}) => {
+                        this.setInput(cptable.utils.decode(inputChrEnc, inputData));
+                    });
                 } else {
-                    inputVal = Utils.byteArrayToChars(inputData);
+                    this.setInput(Utils.byteArrayToChars(inputData));
                 }
-                this.setInput(inputVal);
             } catch (err) {}
         }
 

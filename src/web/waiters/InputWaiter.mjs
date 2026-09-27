@@ -9,7 +9,6 @@ import LoaderWorker from "worker-loader!../workers/LoaderWorker.js";
 import InputWorker from "worker-loader!../workers/InputWorker.mjs";
 import Utils, {debounce} from "../../core/Utils.mjs";
 import {toBase64} from "../../core/lib/Base64.mjs";
-import cptable from "codepage";
 
 import {
     EditorView,
@@ -644,22 +643,22 @@ class InputWaiter {
 
             // Decode the data to a string
             this.manager.timing.recordTime("inputEncodingStart", inputNum);
-            let inputVal;
-            if (this.getChrEnc() > 0) {
-                inputVal = cptable.utils.decode(this.inputChrEnc, new Uint8Array(inputData.buffer));
-            } else {
-                inputVal = Utils.arrayBufferToStr(inputData.buffer);
-            }
-            this.manager.timing.recordTime("inputEncodingEnd", inputNum);
+            const decodeInput = enc => enc > 0 ?
+                import("codepage").then(({default: cptable}) => cptable.utils.decode(enc, new Uint8Array(inputData.buffer))) :
+                Promise.resolve(Utils.arrayBufferToStr(inputData.buffer));
 
-            // Populate the input editor
-            this.setInput(inputVal, silent);
+            decodeInput(this.getChrEnc()).then(inputVal => {
+                this.manager.timing.recordTime("inputEncodingEnd", inputNum);
 
-            // Set URL to current input
-            if (inputVal.length >= 0 && inputVal.length <= 51200) {
-                const inputStr = toBase64(inputVal, "A-Za-z0-9+/");
-                this.app.updateURL(true, inputStr);
-            }
+                // Populate the input editor
+                this.setInput(inputVal, silent);
+
+                // Set URL to current input
+                if (inputVal.length >= 0 && inputVal.length <= 51200) {
+                    const inputStr = toBase64(inputVal, "A-Za-z0-9+/");
+                    this.app.updateURL(true, inputStr);
+                }
+            });
         }.bind(this));
     }
 
@@ -777,43 +776,47 @@ class InputWaiter {
      */
     updateInputValue(inputNum, value, force=false) {
         // Prepare the value as a buffer (full value) and a string sample (up to 4096 bytes)
-        let buffer;
         let stringSample = "";
 
         // If value is a string, interpret it using the specified character encoding
         const tabNum = this.manager.tabs.getActiveTab("input");
         this.manager.timing.recordTime("inputEncodingStart", tabNum);
+        let bufferPromise;
         if (typeof value === "string") {
             stringSample = value.slice(0, 4096);
             if (this.getChrEnc() > 0) {
-                buffer = cptable.utils.encode(this.getChrEnc(), value);
-                buffer = new Uint8Array(buffer).buffer;
+                bufferPromise = import("codepage").then(({default: cptable}) => {
+                    const buffer = cptable.utils.encode(this.getChrEnc(), value);
+                    return new Uint8Array(buffer).buffer;
+                });
             } else {
-                buffer = Utils.strToArrayBuffer(value);
+                bufferPromise = Promise.resolve(Utils.strToArrayBuffer(value));
             }
         } else {
-            buffer = value;
+            bufferPromise = Promise.resolve(value);
             stringSample = Utils.arrayBufferToStr(value.slice(0, 4096));
         }
-        this.manager.timing.recordTime("inputEncodingEnd", tabNum);
+        bufferPromise.then(buffer => {
+            this.manager.timing.recordTime("inputEncodingEnd", tabNum);
 
-        // Update the deep link
-        const recipeStr = buffer.byteLength < 51200 ? toBase64(buffer, "A-Za-z0-9+/") : ""; // B64 alphabet with no padding
-        const includeInput = recipeStr.length > 0 && buffer.byteLength < 51200;
-        this.app.updateURL(includeInput, recipeStr);
+            // Update the deep link
+            const recipeStr = buffer.byteLength < 51200 ? toBase64(buffer, "A-Za-z0-9+/") : ""; // B64 alphabet with no padding
+            const includeInput = recipeStr.length > 0 && buffer.byteLength < 51200;
+            this.app.updateURL(includeInput, recipeStr);
 
-        // Post new value to the InputWorker
-        const transferable = [buffer];
-        this.inputWorker.postMessage({
-            action: "updateInputValue",
-            data: {
-                inputNum: inputNum,
-                buffer: buffer,
-                stringSample: stringSample,
-                encoding: this.getChrEnc(),
-                eolSequence: this.getEOLSeq()
-            }
-        }, transferable);
+            // Post new value to the InputWorker
+            const transferable = [buffer];
+            this.inputWorker.postMessage({
+                action: "updateInputValue",
+                data: {
+                    inputNum: inputNum,
+                    buffer: buffer,
+                    stringSample: stringSample,
+                    encoding: this.getChrEnc(),
+                    eolSequence: this.getEOLSeq()
+                }
+            }, transferable);
+        });
     }
 
     /**

@@ -35,6 +35,13 @@ module.exports = function (grunt) {
             "copy:standalone", "zip:standalone", "clean:standalone", "calcDownloadHash", "chmod"
         ]);
 
+    grunt.registerTask("faster",
+        "Production build without linting (run `npm run lint` separately).",
+        [
+            "clean:prod", "clean:config", "exec:generateConfig", "findModules", "webpack:web",
+            "copy:standalone", "zip:standalone", "clean:standalone", "calcDownloadHash", "chmod"
+        ]);
+
     grunt.registerTask("node",
         "Compiles CyberChef into a single NodeJS module.",
         [
