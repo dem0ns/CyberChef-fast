@@ -1,0 +1,90 @@
+name: Build CyberChef-faster
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1" # weekly rebuild
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Package
+        run: |
+          cd build/prod
+          rm -f BundleAnalyzerReport.html CyberChef_*.zip sha256digest.txt
+          VERSION=$(cat "$GITHUB_WORKSPACE/FASTER_VERSION")
+          zip -qr "$GITHUB_WORKSPACE/CyberChef-faster_v${VERSION}.zip" . -x "*.br" -x "*.gz"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: build/prod/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-zip
+          path: CyberChef-faster_v*.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-zip
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(cat FASTER_VERSION)
+          RELTAG="v$VERSION"
+          if gh release view "$RELTAG" >/dev/null 2>&1; then
+            gh release upload "$RELTAG" CyberChef-faster_v*.zip --clobber
+          else
+            gh release create "$RELTAG" CyberChef-faster_v*.zip \
+              --title "CyberChef-faster v$VERSION" \
+              --notes "Instant UI, zero loading spinners. See README."
+          fi
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment
