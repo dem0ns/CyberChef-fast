@@ -20,7 +20,7 @@
 **本地**（最快，可离线）：
 
 ```bash
-unzip CyberChef-faster_v1.2.0.zip && cd CyberChef-faster_v1.2.0
+unzip CyberChef-faster.zip -d CyberChef-faster && cd CyberChef-faster
 python3 -m http.server 8787   # → http://localhost:8787
 ```
 
