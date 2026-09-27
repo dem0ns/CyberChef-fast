@@ -37,7 +37,7 @@ npm install
 npm run build        # 产物在 build/prod/
 ```
 
-Pins the upstream commit recorded in `UPSTREAM`, applies `patches/cyberchef-faster.patch`, installs dependencies and produces a dist directory (Node 24 and git required). GitHub Actions rebuilds every Monday and on demand, tracking the pinned upstream commit.
+Requires Node 24 and git. GitHub Actions rebuilds weekly and on every push.
 
 ## Copyright
 
