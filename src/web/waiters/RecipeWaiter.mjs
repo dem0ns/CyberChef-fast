@@ -299,18 +299,18 @@ class RecipeWaiter {
      * @fires Manager#statechange
      * @param {event} e
      */
-    breakpointClick(e) {
-        const bp = e.target;
-
-        if (bp.getAttribute("break") === "false") {
-            bp.setAttribute("break", "true");
-            bp.classList.add("breakpoint-selected");
-        } else {
-            bp.setAttribute("break", "false");
-            bp.classList.remove("breakpoint-selected");
-        }
-
-        window.dispatchEvent(this.manager.statechange);
+    /**
+     * Handler for operation delete click events.
+     * Removes the operation from the recipe.
+     *
+     * @param {event} e
+     */
+    operationDeleteClick(e) {
+        const opEl = e.target.closest(".operation");
+        if (!opEl) return;
+        opEl.remove();
+        document.getElementById("rec-list").dispatchEvent(this.manager.operationremove);
+        document.dispatchEvent(this.manager.statechange);
     }
 
 
@@ -347,13 +347,12 @@ class RecipeWaiter {
      */
     getConfig() {
         const config = [];
-        let ingredients, ingList, disabled, bp, item;
+        let ingredients, ingList, disabled, item;
         const operations = document.querySelectorAll("#rec-list li.operation");
 
         for (let i = 0; i < operations.length; i++) {
             ingredients = [];
             disabled = operations[i].querySelector(".disable-icon");
-            bp = operations[i].querySelector(".breakpoint");
             ingList = operations[i].querySelectorAll(".arg");
 
             for (let j = 0; j < ingList.length; j++) {
@@ -384,10 +383,6 @@ class RecipeWaiter {
                 item.disabled = true;
             }
 
-            if (bp && bp.getAttribute("break") === "true") {
-                item.breakpoint = true;
-            }
-
             config.push(item);
         }
 
@@ -401,15 +396,7 @@ class RecipeWaiter {
      * @param {number|boolean} position - If boolean, turn off all indicators
      */
     updateBreakpointIndicator(position) {
-        const operations = document.querySelectorAll("#rec-list li.operation");
-        if (typeof position === "boolean") position = operations.length;
-        for (let i = 0; i < operations.length; i++) {
-            if (i === position) {
-                operations[i].classList.add("break");
-            } else {
-                operations[i].classList.remove("break");
-            }
-        }
+        // Breakpoints removed in CyberChef-faster
     }
 
 

@@ -61,22 +61,6 @@ class BindingsWaiter {
                         // do nothing, just don't throw an error
                     }
                     break;
-                case "KeyB": // Set breakpoint
-                    e.preventDefault();
-                    try {
-                        elem = document.activeElement.closest(".operation").querySelectorAll(".breakpoint")[0];
-                        if (elem.getAttribute("break") === "false") {
-                            elem.setAttribute("break", "true"); // add break point if not already enabled
-                            elem.classList.add("breakpoint-selected");
-                        } else {
-                            elem.setAttribute("break", "false"); // remove break point if already enabled
-                            elem.classList.remove("breakpoint-selected");
-                        }
-                        window.dispatchEvent(this.manager.statechange);
-                    } catch (e) {
-                        // do nothing, just don't throw an error
-                    }
-                    break;
                 case "KeyD": // Disable operation
                     e.preventDefault();
                     try {
@@ -208,11 +192,6 @@ class BindingsWaiter {
             <td>Disable current operation</td>
             <td>Ctrl+${modWinLin}+d</td>
             <td>Ctrl+${modMac}+d</td>
-        </tr>
-        <tr>
-            <td>Set/clear breakpoint</td>
-            <td>Ctrl+${modWinLin}+b</td>
-            <td>Ctrl+${modMac}+b</td>
         </tr>
         <tr>
             <td>Bake</td>

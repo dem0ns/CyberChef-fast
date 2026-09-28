@@ -623,12 +623,9 @@ class App {
                 }
             }
 
-            // Set disabled and breakpoint
+            // Set disabled
             if (recipeConfig[i].disabled) {
                 item.querySelector(".disable-icon").click();
-            }
-            if (recipeConfig[i].breakpoint) {
-                item.querySelector(".breakpoint").click();
             }
 
             this.manager.recipe.triggerArgEvents(item);
