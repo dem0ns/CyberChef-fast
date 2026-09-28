@@ -39,7 +39,7 @@ function main() {
     ];
 
     const defaultOptions = {
-        updateUrl:           true,
+        updateUrl:           false, // CyberChef-faster: URL 不随输入重写
         showHighlighter:     true,
         wordWrap:            true,
         showErrors:          true,

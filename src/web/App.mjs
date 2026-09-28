@@ -67,6 +67,8 @@ class App {
 
         this.initialiseSplitter();
         this.loadLocalStorage();
+        // CyberChef-faster: URL stays stable — never rewrite it on input
+        this.options.updateUrl = false;
         this.manager.options.applyPreferredColorScheme();
         this.populateOperationsList();
         this.manager.setup();
