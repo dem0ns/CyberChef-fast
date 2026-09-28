@@ -36,8 +36,7 @@ jobs:
         run: |
           cd build/prod
           rm -f BundleAnalyzerReport.html CyberChef_*.zip sha256digest.txt
-          VERSION=$(cat "$GITHUB_WORKSPACE/FASTER_VERSION")
-          zip -qr "$GITHUB_WORKSPACE/CyberChef-faster_v${VERSION}.zip" . -x "*.br" -x "*.gz"
+          zip -qr "$GITHUB_WORKSPACE/CyberChef-faster.zip" . -x "*.br" -x "*.gz"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -47,7 +46,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-zip
-          path: CyberChef-faster_v*.zip
+          path: CyberChef-faster.zip
 
   release:
     needs: build
@@ -61,13 +60,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION=$(cat FASTER_VERSION)
-          RELTAG="v$VERSION"
-          if gh release view "$RELTAG" >/dev/null 2>&1; then
-            gh release upload "$RELTAG" CyberChef-faster_v*.zip --clobber
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest CyberChef-faster.zip --clobber
           else
-            gh release create "$RELTAG" CyberChef-faster_v*.zip \
-              --title "CyberChef-faster v$VERSION" \
+            gh release create latest CyberChef-faster.zip \
+              --title "CyberChef-faster" \
               --notes "Instant UI, zero loading spinners. See README."
           fi
 

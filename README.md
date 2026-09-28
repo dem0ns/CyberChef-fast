@@ -20,7 +20,7 @@ English | [中文](README.zh-CN.md)
 **Local** (fastest, works offline):
 
 ```bash
-unzip CyberChef-faster_v1.2.0.zip && cd CyberChef-faster_v1.2.0
+unzip CyberChef-faster.zip && cd CyberChef-faster
 python3 -m http.server 8787   # → http://localhost:8787
 ```
 
@@ -34,10 +34,10 @@ docker compose up -d  # → http://localhost:8787
 
 ```bash
 npm install
-npm run build        # 产物在 build/prod/
+npm run build        # output in build/prod/
 ```
 
-Pins the upstream commit recorded in `UPSTREAM`, applies `patches/cyberchef-faster.patch`, installs dependencies and produces a dist directory (Node 24 and git required). GitHub Actions rebuilds every Monday and on demand, tracking the pinned upstream commit.
+This repository is the complete, already-optimized CyberChef source tree — no patch step. `npm install` and `npm run build` produce the dist directory (Node 24). GitHub Actions rebuilds on every push and every Monday, publishing the release artifact and GitHub Pages.
 
 ## Copyright
 

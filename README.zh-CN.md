@@ -20,7 +20,7 @@
 **本地**（最快，可离线）：
 
 ```bash
-unzip CyberChef-faster_v1.2.0.zip && cd CyberChef-faster_v1.2.0
+unzip CyberChef-faster.zip && cd CyberChef-faster
 python3 -m http.server 8787   # → http://localhost:8787
 ```
 
@@ -37,7 +37,7 @@ npm install
 npm run build        # 产物在 build/prod/
 ```
 
-脚本锁定 `UPSTREAM` 中记录的上游提交，套用 `patches/cyberchef-faster.patch`，安装依赖并产出 dist 目录（需要 Node 24 与 git）。GitHub Actions 每周一自动重建，也可手动触发。
+本仓库即完整的 CyberChef 优化后源码，无需补丁步骤。`npm install` + `npm run build` 即可产出 dist 目录（需要 Node 24）。GitHub Actions 在每次推送与每周一自动重建，发布 Release 产物与 GitHub Pages。
 
 ## 版权
 
