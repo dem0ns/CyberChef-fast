@@ -288,6 +288,7 @@ class InputWaiter {
      * @param {boolean} [silent=false]
      */
     setInput(data, silent=false) {
+
         const lineLengthThreshold = 131072; // 128KB
         let wrap = this.app.options.wordWrap;
         if (data.length > lineLengthThreshold) {

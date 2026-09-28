@@ -119,6 +119,22 @@ class App {
                 // Bake initial input
                 this.manager.input.bakeAll();
             }
+
+            // CyberChef-faster: the worker boot can race the URI input set and
+            // drop the value — re-assert it once things have settled.
+            if (this.uriParams && this.uriParams.input) {
+                try {
+                    const inputData = fromBase64(this.uriParams.input, null, "byteArray");
+                    const inputChrEnc = this.manager.input.getChrEnc();
+                    if (inputChrEnc > 0) {
+                        import("codepage").then(({default: cptable}) => {
+                            this.setInput(cptable.utils.decode(inputChrEnc, inputData));
+                        });
+                    } else {
+                        this.setInput(Utils.byteArrayToChars(inputData));
+                    }
+                } catch (err) {}
+            }
         }.bind(this), 1000);
 
         // Clear the loading message interval
