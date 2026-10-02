@@ -1,5 +1,5 @@
 # CyberChef-faster — builds this repository's source, serves with nginx
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /src
 COPY . .
 RUN npm install --no-audit --no-fund \
